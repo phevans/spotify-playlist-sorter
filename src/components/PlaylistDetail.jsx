@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import {
   DndContext,
+  DragOverlay,
   closestCenter,
   PointerSensor,
   useSensor,
@@ -146,6 +147,8 @@ export default function PlaylistDetail({ playlist, player }) {
 
   const coverImage = playlist.images?.[0]?.url
   const groupDragActive = activeDragId !== null && selectedIds.has(activeDragId) && selectedIds.size > 1
+  const activeTrack = activeDragId ? tracks.find(t => t.id === activeDragId) ?? null : null
+  const dragCount = groupDragActive ? selectedIds.size : 1
 
   return (
     <div className={styles.wrapper}>
@@ -210,6 +213,7 @@ export default function PlaylistDetail({ playlist, player }) {
           onDragEnd={handleDragEnd}
           onDragCancel={() => setActiveDragId(null)}
         >
+
           <SortableContext
             items={tracks.map(t => t.id)}
             strategy={verticalListSortingStrategy}
@@ -235,6 +239,10 @@ export default function PlaylistDetail({ playlist, player }) {
               ))}
             </div>
           </SortableContext>
+
+          <DragOverlay dropAnimation={null}>
+            {activeTrack && <DragStack track={activeTrack} count={dragCount} />}
+          </DragOverlay>
         </DndContext>
       )}
 
@@ -243,6 +251,37 @@ export default function PlaylistDetail({ playlist, player }) {
           Key data provided by <a href="https://getsongbpm.com" target="_blank" rel="noreferrer">GetSongBPM.com</a>
         </p>
       )}
+    </div>
+  )
+}
+
+function DragStack({ track, count }) {
+  const extraCards = Math.min(count - 1, 2)
+  return (
+    <div className={styles.dragStack}>
+      {Array.from({ length: extraCards }, (_, i) => {
+        const offset = (extraCards - i) * 5
+        return (
+          <div
+            key={i}
+            className={styles.ghostCard}
+            style={{
+              transform: `translate(${offset}px, ${offset}px)`,
+              opacity: 0.3 + i * 0.2,
+              zIndex: i + 1,
+            }}
+          />
+        )
+      })}
+      <div className={styles.activeCard}>
+        <div className={styles.dragTrackInfo}>
+          <span className={styles.dragTrackName}>{track.name}</span>
+          <span className={styles.dragArtistName}>
+            {track.artists.map(a => a.name).join(', ')}
+          </span>
+        </div>
+        {count > 1 && <span className={styles.dragBadge}>{count}</span>}
+      </div>
     </div>
   )
 }

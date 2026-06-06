@@ -32,7 +32,7 @@ export default function TrackRow({ track, index, isPlaying, isActive, onPreview,
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: (isDragging || isGroupActive) ? 0 : 1,
   }
 
   const albumArt = smallAlbumImage(track.album?.images)
