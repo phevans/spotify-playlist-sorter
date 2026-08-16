@@ -19,6 +19,9 @@ export default function LoginPage() {
           Connect with Spotify
         </button>
       </div>
+      <p className={styles.attribution}>
+        Key data provided by <a href="https://getsongbpm.com" target="_blank" rel="noreferrer">GetSongBPM.com</a>
+      </p>
     </div>
   )
 }
