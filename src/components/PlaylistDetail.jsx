@@ -19,7 +19,18 @@ import { cacheGet, cacheSet, cacheClear } from '../cache.js'
 import TrackRow from './TrackRow.jsx'
 import styles from './PlaylistDetail.module.css'
 
-const CYCLE_COLORS = [null, '#1db954', '#4a9eff', '#b44eff', '#ff8c42', '#ff4e6a']
+const CYCLE_COLORS = [null, '#1db954', '#4a9eff', '#b44eff', '#ff8c42', '#ff4e6a', '#ffd93d', '#2ee6c8']
+
+// Group tracks by tag colour in CYCLE_COLORS order, untagged last.
+// Stable within each group, so the existing running order survives.
+function sortByColor(tracks, colors) {
+  const rank = new Map(CYCLE_COLORS.slice(1).map((c, i) => [c, i]))
+  return [...tracks].sort((a, b) => {
+    const ra = rank.get(colors[a.id]) ?? CYCLE_COLORS.length
+    const rb = rank.get(colors[b.id]) ?? CYCLE_COLORS.length
+    return ra - rb
+  })
+}
 
 // Pull all selected tracks out, then re-insert them as a group at the drop point.
 function multiReorder(tracks, activeId, overId, selectedIds) {
@@ -137,6 +148,11 @@ export default function PlaylistDetail({ playlist, player }) {
     })
   }, [])
 
+  const handleSortByColor = useCallback(() => {
+    setTracks(prev => sortByColor(prev, trackColors))
+    setHasChanges(true)
+  }, [trackColors])
+
   const handleToggleSelect = useCallback((trackId) => {
     setSelectedIds(prev => {
       const next = new Set(prev)
@@ -146,6 +162,7 @@ export default function PlaylistDetail({ playlist, player }) {
   }, [])
 
   const coverImage = playlist.images?.[0]?.url
+  const hasTags = tracks.some(t => trackColors[t.id])
   const groupDragActive = activeDragId !== null && selectedIds.has(activeDragId) && selectedIds.size > 1
   const activeTrack = activeDragId ? tracks.find(t => t.id === activeDragId) ?? null : null
   const dragCount = groupDragActive ? selectedIds.size : 1
@@ -176,6 +193,20 @@ export default function PlaylistDetail({ playlist, player }) {
           />
           s
         </label>
+        <button
+          className={styles.sortBtn}
+          onClick={handleSortByColor}
+          disabled={!hasTags}
+          title={hasTags ? 'Group tracks by tag colour' : 'Tag some tracks first'}
+        >
+          <span className={styles.sortSwatches} aria-hidden="true">
+            {CYCLE_COLORS.slice(1, 4).map(c => (
+              <span key={c} className={styles.sortSwatch} style={{ background: c }} />
+            ))}
+          </span>
+          Sort by colour
+        </button>
+
         {selectedIds.size > 0 && (
           <span className={styles.selectionCount}>
             {selectedIds.size} selected

@@ -116,6 +116,46 @@
   border-color: var(--green);
 }
 
+.sortBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface-hover);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: border-color 0.15s, opacity 0.15s;
+}
+
+.sortBtn:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.sortBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.sortSwatches {
+  display: flex;
+}
+
+.sortSwatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: -3px;
+  box-shadow: 0 0 0 1.5px var(--surface-hover);
+}
+
+.sortSwatch:last-child {
+  margin-right: 0;
+}
+
 .selectionCount {
   font-size: 12px;
   color: var(--green);
