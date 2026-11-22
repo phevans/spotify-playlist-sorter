@@ -41,6 +41,20 @@ npm run dev
 
 Open **http://127.0.0.1:5173** (not `localhost` — the origin must match the registered redirect URI exactly).
 
+## Tags (shared with TrackTagger)
+
+Tracks show the tags they have, read from your own playlists named `tag:<name>`.
+This is the same format TrackTagger uses (see
+`~/Code/spotify-track-tagger/docs/tag-format.md`), so tags added in either app show up in the other.
+Click a track's tag area (or select tracks and click **Tags…**) to open the tag tiles: click a tile
+to add or remove the tag, set a 1–5 star rating (the `tag:N Star` playlists), or create a new tag.
+
+- A tag's colour is the `[#RRGGBB]` marker in the playlist description. Tags without a marker get
+  one written to their description automatically, as TrackTagger does.
+- Tag contents are cached in localStorage and only re-read when a playlist's `snapshot_id` changes.
+  Syncs run on load, on returning to the tab (at most every 30 s), and via **Refresh** in the tag panel.
+- The "Tag colour" dot and **Sort by colour** are separate, local-only features.
+
 ## Deployment
 
 Deployed on Netlify at **https://sps.djgibbon.co.uk**.
@@ -50,17 +64,24 @@ the site is reached via a `CNAME` record — `sps` → `spotify-playlist-dj-tool
 Nameservers are deliberately *not* delegated to Netlify, because the apex carries
 Namecheap email-forwarding MX and SPF records.
 
-The Netlify project (`spotify-playlist-dj-tool`) is not linked to a Git repo —
-deploys are manual from the CLI:
+The Netlify project (`spotify-playlist-dj-tool`) is linked to
+`phevans/spotify-playlist-sorter` on GitHub: **every push to `main` builds and
+deploys to production automatically**, using the build settings in `netlify.toml`.
+Other branches and pull requests get preview deploys, but Spotify login won't work
+on those URLs because they aren't registered redirect URIs.
+
+A manual deploy from the CLI still works if needed:
 
 ```bash
 npm run build
 npx netlify deploy --prod --dir=dist
 ```
 
-Environment variables live in the Netlify dashboard, not in the repo. Note that
-`VITE_*` values are baked in at **build** time, so changing one requires a full
-rebuild and redeploy, not just a redeploy.
+Environment variables live in the Netlify dashboard, not in the repo. Builds run
+on Netlify, so the local `.env` isn't used for deploys: `VITE_SPOTIFY_CLIENT_ID`
+and `VITE_REDIRECT_URI` must be set there, and `GETSONGBPM_KEY` is read at runtime
+by the function. `VITE_*` values are baked in at **build** time, so changing one
+requires a full rebuild and redeploy, not just a redeploy.
 
 ## Musical keys
 

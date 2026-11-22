@@ -1,20 +1,8 @@
-import { useEffect, useState } from 'react'
-import { fetchAllPlaylists } from '../api.js'
 import styles from './Sidebar.module.css'
 
 const PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23333'/%3E%3Cpath d='M32 20c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 20c-4.418 0-8-3.582-8-8s3.582-8 8-8 8 3.582 8 8-3.582 8-8 8zm0-12c-2.209 0-4 1.791-4 4s1.791 4 4 4 4-1.791 4-4-1.791-4-4-4z' fill='%23666'/%3E%3C/svg%3E"
 
-export default function Sidebar({ selectedId, onSelect, onLogout }) {
-  const [playlists, setPlaylists] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-
-  useEffect(() => {
-    fetchAllPlaylists()
-      .then(setPlaylists)
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false))
-  }, [])
+export default function Sidebar({ playlists, loading, error, selectedId, onSelect, onLogout }) {
 
   return (
     <aside className={styles.sidebar}>
@@ -26,7 +14,7 @@ export default function Sidebar({ selectedId, onSelect, onLogout }) {
       </div>
       <div className={styles.list}>
         {loading && <p className={styles.status}>Loading playlists…</p>}
-        {error && <p className={styles.error}>{error}</p>}
+        {error && playlists.length === 0 && <p className={styles.error}>{error}</p>}
         {!loading && playlists.map(pl => (
           <button
             key={pl.id}
@@ -42,13 +30,17 @@ export default function Sidebar({ selectedId, onSelect, onLogout }) {
             />
             <div className={styles.info}>
               <span className={styles.name}>{pl.name}</span>
-              <span className={styles.count}>{pl.tracks.total} tracks</span>
+              <span className={styles.count}>{trackCount(pl)} tracks</span>
             </div>
           </button>
         ))}
       </div>
     </aside>
   )
+}
+
+function trackCount(pl) {
+  return (pl.tracks ?? pl.items)?.total ?? 0
 }
 
 function smallImage(images) {

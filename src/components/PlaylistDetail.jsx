@@ -17,6 +17,7 @@ import { fetchAllPlaylistTracks, savePlaylistOrder, playTrack } from '../api.js'
 import { fetchTrackKeys } from '../getsongbpm.js'
 import { cacheGet, cacheSet, cacheClear } from '../cache.js'
 import TrackRow from './TrackRow.jsx'
+import TagEditor from './TagEditor.jsx'
 import styles from './PlaylistDetail.module.css'
 
 const CYCLE_COLORS = [null, '#1db954', '#4a9eff', '#b44eff', '#ff8c42', '#ff4e6a', '#ffd93d', '#2ee6c8']
@@ -44,7 +45,7 @@ function multiReorder(tracks, activeId, overId, selectedIds) {
   return [...rest.slice(0, insertAt), ...selected, ...rest.slice(insertAt)]
 }
 
-export default function PlaylistDetail({ playlist, player }) {
+export default function PlaylistDetail({ playlist, player, tags }) {
   const [tracks, setTracks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -55,6 +56,7 @@ export default function PlaylistDetail({ playlist, player }) {
   const [keyMap, setKeyMap] = useState({})
   const [selectedIds, setSelectedIds] = useState(() => new Set())
   const [activeDragId, setActiveDragId] = useState(null)
+  const [editorIds, setEditorIds] = useState(null)
 
   useEffect(() => {
     setLoading(true)
@@ -63,6 +65,7 @@ export default function PlaylistDetail({ playlist, player }) {
     setHasChanges(false)
     setKeyMap({})
     setSelectedIds(new Set())
+    setEditorIds(null)
 
     fetchAllPlaylistTracks(playlist.id)
       .then(trackList => {
@@ -161,6 +164,18 @@ export default function PlaylistDetail({ playlist, player }) {
     })
   }, [])
 
+  // Opens the tag tiles for a track, or for the whole selection if the track is part of it
+  const handleOpenTags = useCallback((trackId) => {
+    if (trackId && !(selectedIds.has(trackId) && selectedIds.size > 1)) {
+      setEditorIds([trackId])
+    } else {
+      setEditorIds(tracks.filter(t => selectedIds.has(t.id)).map(t => t.id))
+    }
+  }, [tracks, selectedIds])
+
+  const closeTagEditor = useCallback(() => setEditorIds(null), [])
+  const editorTracks = editorIds ? tracks.filter(t => editorIds.includes(t.id)) : []
+
   const coverImage = playlist.images?.[0]?.url
   const hasTags = tracks.some(t => trackColors[t.id])
   const groupDragActive = activeDragId !== null && selectedIds.has(activeDragId) && selectedIds.size > 1
@@ -176,7 +191,7 @@ export default function PlaylistDetail({ playlist, player }) {
         <div className={styles.meta}>
           <p className={styles.label}>Playlist</p>
           <h1 className={styles.name}>{playlist.name}</h1>
-          <p className={styles.info}>{playlist.tracks.total} tracks</p>
+          <p className={styles.info}>{(playlist.tracks ?? playlist.items)?.total ?? tracks.length} tracks</p>
         </div>
       </div>
 
@@ -211,6 +226,7 @@ export default function PlaylistDetail({ playlist, player }) {
           <span className={styles.selectionCount}>
             {selectedIds.size} selected
             <button className={styles.clearSelection} onClick={() => setSelectedIds(new Set())}>×</button>
+            <button className={styles.tagSelection} onClick={() => handleOpenTags(null)}>Tags…</button>
           </span>
         )}
         <button
@@ -266,6 +282,9 @@ export default function PlaylistDetail({ playlist, player }) {
                   isSelected={selectedIds.has(track.id)}
                   isGroupActive={groupDragActive && selectedIds.has(track.id) && activeDragId !== track.id}
                   onToggleSelect={handleToggleSelect}
+                  trackTags={tags.tagsFor(track.uri)}
+                  rating={tags.ratingFor(track.uri)}
+                  onOpenTags={handleOpenTags}
                 />
               ))}
             </div>
@@ -275,6 +294,10 @@ export default function PlaylistDetail({ playlist, player }) {
             {activeTrack && <DragStack track={activeTrack} count={dragCount} />}
           </DragOverlay>
         </DndContext>
+      )}
+
+      {editorTracks.length > 0 && (
+        <TagEditor tags={tags} tracks={editorTracks} onClose={closeTagEditor} />
       )}
 
       {!loading && tracks.length > 0 && (

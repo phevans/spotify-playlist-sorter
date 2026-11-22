@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { textColourOn } from '../tags.js'
 import styles from './TrackRow.module.css'
 
 const PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%23333'/%3E%3Ccircle cx='24' cy='24' r='10' fill='none' stroke='%23666' stroke-width='2'/%3E%3Ccircle cx='24' cy='24' r='3' fill='%23666'/%3E%3C/svg%3E"
@@ -18,7 +19,7 @@ function smallAlbumImage(images) {
   return sorted.find(img => img.url)?.url ?? null
 }
 
-export default function TrackRow({ track, index, isPlaying, isActive, onPreview, player, canPlay, color, onColorClick, openKey, isSelected, isGroupActive, onToggleSelect }) {
+export default function TrackRow({ track, index, isPlaying, isActive, onPreview, player, canPlay, color, onColorClick, openKey, isSelected, isGroupActive, onToggleSelect, trackTags, rating, onOpenTags }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: track.id })
 
@@ -116,6 +117,32 @@ export default function TrackRow({ track, index, isPlaying, isActive, onPreview,
         )}
       </div>
 
+      <button
+        className={styles.tags}
+        onClick={(e) => {
+          if (e.ctrlKey || e.metaKey) return // the row toggles selection
+          onOpenTags(track.id)
+        }}
+        title={[
+          rating ? `${rating} star${rating === 1 ? '' : 's'}` : null,
+          ...trackTags.map(t => t.name),
+        ].filter(Boolean).join(', ') || 'Add tags'}
+      >
+        {rating && <span className={styles.rating}>★{rating}</span>}
+        {trackTags.map(t => (
+          <span
+            key={t.id}
+            className={styles.tagChip}
+            style={{ background: t.colour, color: textColourOn(t.colour) }}
+          >
+            {t.name}
+          </span>
+        ))}
+        {!rating && trackTags.length === 0 && (
+          <span className={styles.addTag}><TagIcon /> Tag</span>
+        )}
+      </button>
+
       <span className={styles.duration}>{formatDuration(track.duration_ms)}</span>
 
       <span className={`${styles.openKey} ${openKey ? (openKey.endsWith('d') ? styles.major : styles.minor) : styles.keyEmpty}`}>
@@ -129,6 +156,15 @@ export default function TrackRow({ track, index, isPlaying, isActive, onPreview,
         title="Tag colour"
       />
     </div>
+  )
+}
+
+function TagIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round">
+      <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/>
+      <circle cx="7.5" cy="7.5" r="1.5" fill="currentColor"/>
+    </svg>
   )
 }
 
