@@ -2,16 +2,21 @@
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 32px;
 }
 
+/* Leave the player bar uncovered and clickable */
+.abovePlayer {
+  bottom: var(--player-height);
+}
+
 .panel {
   width: min(640px, 100%);
-  max-height: calc(100vh - 64px);
+  max-height: 100%; /* of the backdrop, which stops above the player when it is showing */
   display: flex;
   flex-direction: column;
   background: var(--surface);

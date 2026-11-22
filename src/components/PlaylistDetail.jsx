@@ -297,7 +297,7 @@ export default function PlaylistDetail({ playlist, player, tags }) {
       )}
 
       {editorTracks.length > 0 && (
-        <TagEditor tags={tags} tracks={editorTracks} onClose={closeTagEditor} />
+        <TagEditor tags={tags} tracks={editorTracks} onClose={closeTagEditor} playerVisible={!!player.deviceId} />
       )}
 
       {!loading && tracks.length > 0 && (

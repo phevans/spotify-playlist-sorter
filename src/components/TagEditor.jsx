@@ -7,7 +7,7 @@ import styles from './TagEditor.module.css'
  * track is in it. With several tracks a tile is lit if all have the tag, part-lit if some do; clicking a
  * part-lit or unlit tile adds the tag to all of them, clicking a lit one removes it from all.
  */
-export default function TagEditor({ tags, tracks, onClose }) {
+export default function TagEditor({ tags, tracks, onClose, playerVisible = false }) {
   const uris = tracks.map(t => t.uri)
   const panelRef = useRef(null)
 
@@ -31,7 +31,10 @@ export default function TagEditor({ tags, tracks, onClose }) {
     : tracks.slice(0, 3).map(t => t.name).join(', ') + (tracks.length > 3 ? '…' : '')
 
   return (
-    <div className={styles.backdrop} onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
+    // The backdrop stops at the player bar, so it stays usable (seek, skip) while tagging
+    <div
+      className={`${styles.backdrop} ${playerVisible ? styles.abovePlayer : ''}`}
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className={styles.panel} ref={panelRef} tabIndex={-1} role="dialog" aria-label="Edit tags">
         <div className={styles.header}>
           <div className={styles.heading}>

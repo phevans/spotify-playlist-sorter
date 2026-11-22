@@ -128,19 +128,21 @@ export default function TrackRow({ track, index, isPlaying, isActive, onPreview,
           ...trackTags.map(t => t.name),
         ].filter(Boolean).join(', ') || 'Add tags'}
       >
-        {rating && <span className={styles.rating}>★{rating}</span>}
-        {trackTags.map(t => (
-          <span
-            key={t.id}
-            className={styles.tagChip}
-            style={{ background: t.colour, color: textColourOn(t.colour) }}
-          >
-            {t.name}
-          </span>
-        ))}
-        {!rating && trackTags.length === 0 && (
-          <span className={styles.addTag}><TagIcon /> Tag</span>
-        )}
+        <span className={styles.tagList}>
+          {rating && <span className={styles.rating}>★{rating}</span>}
+          {trackTags.map(t => (
+            <span
+              key={t.id}
+              className={styles.tagChip}
+              style={{ background: t.colour, color: textColourOn(t.colour) }}
+            >
+              {t.name}
+            </span>
+          ))}
+          {!rating && trackTags.length === 0 && (
+            <span className={styles.addTag}><TagIcon /> Tag</span>
+          )}
+        </span>
       </button>
 
       <span className={styles.duration}>{formatDuration(track.duration_ms)}</span>
