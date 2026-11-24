@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { handleCallback } from '../auth.js'
+import { takeReturnPath } from '../route.js'
 
 export default function CallbackPage({ onComplete }) {
   const called = useRef(false)
@@ -26,7 +27,7 @@ export default function CallbackPage({ onComplete }) {
 
     handleCallback(code, state)
       .then(() => {
-        window.history.replaceState({}, '', '/')
+        window.history.replaceState({}, '', takeReturnPath())
         onComplete()
       })
       .catch(err => setError(err.message))

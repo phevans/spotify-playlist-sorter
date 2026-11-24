@@ -1,3 +1,5 @@
+import { rememberReturnPath } from './route.js'
+
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID
 const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI
 
@@ -36,6 +38,7 @@ export async function startLogin() {
 
   const state = base64urlEncode(crypto.getRandomValues(new Uint8Array(16)))
   sessionStorage.setItem('oauth_state', state)
+  rememberReturnPath()
 
   const params = new URLSearchParams({
     client_id: CLIENT_ID,
